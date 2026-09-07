@@ -40,4 +40,4 @@ jobs:
 
       - name: Build APK via Flet
         run: |
-          flet build apk --module-name app.py --yes
+          flet build apk --module-name app.py
