@@ -57,7 +57,6 @@ def get_system_stats(is_root: bool) -> tuple[str, str, str]:
     temp = "34°C"
     
     try:
-        # Read memory info from /proc/meminfo
         if os.path.exists("/proc/meminfo"):
             with open("/proc/meminfo", "r") as f:
                 lines = f.readlines()
@@ -72,7 +71,6 @@ def get_system_stats(is_root: bool) -> tuple[str, str, str]:
                     used_percent = int(((mem_total - mem_free) / mem_total) * 100)
                     ram_usage = f"{used_percent}% ({int((mem_total - mem_free)/1024/1024)}GB / {int(mem_total/1024/1024)}GB)"
         
-        # Read CPU load / thermal if possible
         if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
             with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
                 t_val = int(f.read().strip())
@@ -88,7 +86,6 @@ def execute_boost_actions(is_root: bool, backend: str, freeze_bg: bool) -> None:
     """Perform optimal tweaks based on device capability."""
     try:
         if is_root:
-            # Root-level deep optimization
             if freeze_bg:
                 subprocess.run(["su", "-c", "am kill-all"], capture_output=True, text=True, timeout=3)
             subprocess.run(["su", "-c", "sync; echo 3 > /proc/sys/vm/drop_caches"], capture_output=True, text=True, timeout=3)
@@ -98,10 +95,8 @@ def execute_boost_actions(is_root: bool, backend: str, freeze_bg: bool) -> None:
             elif backend == "OpenGL ES":
                 subprocess.run(["su", "-c", "setprop debug.hwui.renderer opengl"], capture_output=True, text=True, timeout=2)
         else:
-            # Non-root maximum performance cleaning (GC collect via python runtime & standard memory trim)
             import gc
             gc.collect()
-            # Request system to trim background memory allocations if possible
             subprocess.run(["am", "gc", "com.android.systemui"], capture_output=True, text=True, timeout=2)
     except Exception:
         pass
@@ -135,7 +130,6 @@ def main(page: ft.Page) -> None:
     # UI Components
     game_title = ft.Text(selected_game["name"], size=22, weight=ft.FontWeight.BOLD, color=TEXT)
     
-    # Stats Text Elements
     initial_ram, initial_cpu, initial_temp = get_system_stats(is_root)
     ram_stat_val = ft.Text(initial_ram, size=15, weight=ft.FontWeight.BOLD, color=TEXT)
     cpu_stat_val = ft.Text(initial_cpu, size=15, weight=ft.FontWeight.BOLD, color=TEXT)
@@ -144,7 +138,7 @@ def main(page: ft.Page) -> None:
     mode_badge = ft.Container(
         content=ft.Text("⚡ ROOT PRO MODE" if is_root else "🛡️ NON-ROOT SMART MODE", size=10, weight=ft.FontWeight.BOLD, color=GREEN if is_root else ACCENT),
         bgcolor="#10251B" if is_root else "#251B10",
-        padding=ft.Padding(left=12, top=9, right=12, bottom=9),
+        padding=ft.padding.symmetric(horizontal=12, vertical=9),
         border_radius=20,
     )
 
@@ -162,7 +156,7 @@ def main(page: ft.Page) -> None:
     def panel(content: ft.Control, padding: int = 14) -> ft.Container:
         return ft.Container(
             content=content, padding=padding, bgcolor=GLASS,
-            border=ft.Border.all(1, GLASS_BORDER), border_radius=16, blur=ft.Blur(10, 10),
+            border=ft.border.all(1, GLASS_BORDER), border_radius=16, blur=ft.Blur(10, 10),
         )
 
     def close_dialog(dialog: ft.AlertDialog) -> None:
@@ -183,7 +177,7 @@ def main(page: ft.Page) -> None:
             content=ft.Column(
                 [
                     ft.ListTile(
-                        leading=ft.Container(content=ft.Text(profile.icon, color=ACCENT, weight=ft.FontWeight.BOLD), width=32, alignment=ft.Alignment.CENTER),
+                        leading=ft.Container(content=ft.Text(profile.icon, color=ACCENT, weight=ft.FontWeight.BOLD), width=32, alignment=ft.alignment.center),
                         title=ft.Text(profile.name, color=TEXT),
                         on_click=lambda _, item=profile: choose_game(item, dialog),
                     )
@@ -192,8 +186,8 @@ def main(page: ft.Page) -> None:
                 tight=True, scroll=ft.ScrollMode.AUTO,
             ),
             bgcolor=PANEL,
-        )
-        page.show_dialog(dialog)
+        >
+        page.open(dialog)
 
     def toggle_freeze(_: ft.ControlEvent) -> None:
         frozen["value"] = not frozen["value"]
@@ -217,7 +211,6 @@ def main(page: ft.Page) -> None:
         boost_button.style.bgcolor = "#164D35"
         page.update()
 
-        # Loading Dialog with Animation
         loading_text = ft.Text("Clearing system cache & RAM...", color=TEXT, weight=ft.FontWeight.BOLD)
         loading_dialog = ft.AlertDialog(
             modal=True,
@@ -235,9 +228,8 @@ def main(page: ft.Page) -> None:
             ),
             bgcolor=PANEL, shape=ft.RoundedRectangleBorder(radius=15)
         )
-        page.show_dialog(loading_dialog)
+        page.open(loading_dialog)
 
-        # Step 1: Execute optimizations
         time.sleep(0.8)
         execute_boost_actions(is_root, selected_backend["value"], frozen["value"])
         refresh_stats()
@@ -246,9 +238,9 @@ def main(page: ft.Page) -> None:
         page.update()
         time.sleep(0.9)
 
-        # Step 2: Launch game
         success = launch_game(selected_game["package"], is_root)
-        close_dialog(loading_dialog)
+        loading_dialog.open = False
+        page.update()
 
         if not success:
             err_dlg = ft.AlertDialog(
@@ -258,9 +250,8 @@ def main(page: ft.Page) -> None:
                 actions=[ft.TextButton("OK", on_click=lambda _: close_dialog(err_dlg))],
                 bgcolor=PANEL,
             )
-            page.show_dialog(err_dlg)
+            page.open(err_dlg)
 
-        # Reset button state
         boost_button.text = "BOOST & LAUNCH GAME"
         boost_button.style.bgcolor = ACCENT
         page.update()
@@ -325,8 +316,8 @@ def main(page: ft.Page) -> None:
                         ),
                     ),
 
-                    # PERFORMANCE SETTINGS
-                    ft.Text("PERFORMANCE CONTROLS", size=10, weight.ft=ft.FontWeight.BOLD if hasattr(ft, 'FontWeight') else "bold", color=ACCENT),
+                    # PERFORMANCE SETTINGS (Fixed Syntax Error here)
+                    ft.Text("PERFORMANCE CONTROLS", size=10, weight=ft.FontWeight.BOLD, color=ACCENT),
                     panel(
                         ft.Column(
                             [
@@ -356,7 +347,7 @@ def main(page: ft.Page) -> None:
                 width=min(page.width - 30, 520) if page.width else 520,
                 spacing=12,
             ),
-            padding=ft.Padding(left=16, top=18, right=16, bottom=14),
+            padding=ft.padding.symmetric(horizontal=16, vertical=18),
             expand=True,
         )
     )
