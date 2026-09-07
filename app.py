@@ -138,7 +138,7 @@ def main(page: ft.Page) -> None:
     mode_badge = ft.Container(
         content=ft.Text("⚡ ROOT PRO MODE" if is_root else "🛡️ NON-ROOT SMART MODE", size=10, weight=ft.FontWeight.BOLD, color=GREEN if is_root else ACCENT),
         bgcolor="#10251B" if is_root else "#251B10",
-        padding=ft.padding.symmetric(horizontal=12, vertical=9),
+        padding=10,
         border_radius=20,
     )
 
@@ -336,7 +336,7 @@ def main(page: ft.Page) -> None:
                                             value="Auto (best)",
                                             options=[ft.dropdown.Option("Auto (best)"), ft.dropdown.Option("Vulkan"), ft.dropdown.Option("OpenGL ES")],
                                             width=145, text_size=12, border_color="#34383B", bgcolor=PANEL_LIGHT,
-                                            on_change=lambda e: selected_backend.update({"value": e.control.value})
+                                            on_select=lambda e: selected_backend.update({"value": e.control.value})
                                         ),
                                     ],
                                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -353,7 +353,7 @@ def main(page: ft.Page) -> None:
                 width=min(page.width - 30, 520) if page.width else 520,
                 spacing=12,
             ),
-            padding=ft.padding.symmetric(horizontal=16, vertical=18),
+            padding=16,
             expand=True,
         )
     )
