@@ -25,14 +25,17 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3' # Flet සමඟ හොඳින්ම වැඩ කරන ස්ථාවර Version එකක්
+          flutter-version: '3.24.3'
           channel: 'stable'
           cache: true
 
-      - name: Install Flet CLI
-        run: pip install flet
-
-      - name: Accept Android Licenses and Build APK
+      - name: Install Flet and Dependencies
         run: |
-          yes | flutter doctor --android-licenses
+          python -m pip install --upgrade pip
+          pip install flet
+
+      - name: Build APK via Flet
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.cheatsheet || env.JAVA_HOME }}
+        run: |
           flet build apk --module-name app.py --yes
