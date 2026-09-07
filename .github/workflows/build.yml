@@ -41,9 +41,3 @@ jobs:
       - name: Build APK via Flet
         run: |
           flet build apk --module-name app.py --yes
-
-          - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
