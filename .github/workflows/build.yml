@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Python 3.11 භාවිතා කිරීම වඩාත් සුදුසුයි
+          python-version: '3.11'
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -22,10 +22,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3' # Flet සමඟ හොඳින්ම වැඩ කරන ස්ථාවර Version එකක්
+          channel: 'stable'
+          cache: true
+
       - name: Install Flet CLI
         run: pip install flet
 
-      - name: Accept Android Licenses & Build APK
+      - name: Accept Android Licenses and Build APK
         run: |
           yes | flutter doctor --android-licenses
           flet build apk --module-name app.py --yes
