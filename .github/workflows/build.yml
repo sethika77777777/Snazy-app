@@ -21,7 +21,8 @@ jobs:
         with:
           flutter-version: '3.24.5'
       - run: pip install flet
-      - run: flet build apk --module-name app.py
+      - name: Build APK
+        run: flet build apk --module-name app.py --yes
       - uses: actions/upload-artifact@v4
         with:
           name: snazy-apk
