@@ -156,7 +156,7 @@ def main(page: ft.Page) -> None:
     def panel(content: ft.Control, padding: int = 14) -> ft.Container:
         return ft.Container(
             content=content, padding=padding, bgcolor=GLASS,
-            border=ft.border.all(1, GLASS_BORDER), border_radius=16, blur=ft.Blur(10, 10),
+            border=ft.Border.all(1, GLASS_BORDER), border_radius=16, blur=ft.Blur(10, 10),
         )
 
     def close_dialog(dialog: ft.AlertDialog) -> None:
@@ -186,8 +186,10 @@ def main(page: ft.Page) -> None:
                 tight=True, scroll=ft.ScrollMode.AUTO,
             ),
             bgcolor=PANEL,
-        >
-        page.open(dialog)
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
 
     def toggle_freeze(_: ft.ControlEvent) -> None:
         frozen["value"] = not frozen["value"]
@@ -228,7 +230,9 @@ def main(page: ft.Page) -> None:
             ),
             bgcolor=PANEL, shape=ft.RoundedRectangleBorder(radius=15)
         )
-        page.open(loading_dialog)
+        page.dialog = loading_dialog
+        loading_dialog.open = True
+        page.update()
 
         time.sleep(0.8)
         execute_boost_actions(is_root, selected_backend["value"], frozen["value"])
@@ -250,7 +254,9 @@ def main(page: ft.Page) -> None:
                 actions=[ft.TextButton("OK", on_click=lambda _: close_dialog(err_dlg))],
                 bgcolor=PANEL,
             )
-            page.open(err_dlg)
+            page.dialog = err_dlg
+            err_dlg.open = True
+            page.update()
 
         boost_button.text = "BOOST & LAUNCH GAME"
         boost_button.style.bgcolor = ACCENT
@@ -316,7 +322,7 @@ def main(page: ft.Page) -> None:
                         ),
                     ),
 
-                    # PERFORMANCE SETTINGS (Fixed Syntax Error here)
+                    # PERFORMANCE SETTINGS
                     ft.Text("PERFORMANCE CONTROLS", size=10, weight=ft.FontWeight.BOLD, color=ACCENT),
                     panel(
                         ft.Column(
